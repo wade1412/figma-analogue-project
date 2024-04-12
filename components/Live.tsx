@@ -1,3 +1,4 @@
+import React from "react";
 import {
   useMyPresence,
   useOthers,
@@ -8,7 +9,7 @@ import { CursorMode, CursorState, Reaction } from "@/types/type";
 import LiveCursors from "./cursor/LiveCursors";
 import CursorChat from "./cursor/CursorChat";
 import ReactionSelector from "./reaction/ReactionButton";
-import React from "react";
+import FlyingReaction from "./reaction/FlyingReaction";
 
 const Live = () => {
   const others = useOthers();
@@ -49,7 +50,8 @@ const Live = () => {
           : state
       );
     },
-    [cursorState.mode, setCursorState]);
+    [cursorState.mode, setCursorState]
+  );
 
   const handlePointerUp = useCallback(
     (event: React.PointerEvent) => {
@@ -59,11 +61,12 @@ const Live = () => {
           : state
       );
     },
-    [cursorState.mode, setCursorState]);
+    [cursorState.mode, setCursorState]
+  );
 
-  const setReactions = useCallback((reaction:string) => {
-    setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false })
-  }, [])
+  const setReactions = useCallback((reaction: string) => {
+    setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false });
+  }, []);
 
   useEffect(() => {
     const onKeyUp = (e: KeyboardEvent) => {
@@ -100,8 +103,6 @@ const Live = () => {
     };
   }, [updateMyPresence]);
 
-  
-
   return (
     <div
       onPointerMove={handlePointerMove}
@@ -111,6 +112,17 @@ const Live = () => {
       className="h-[100vh] w-full flex justify-center items-center text-center"
     >
       <h1 className="text-5xl text-white"> Figma Analogue</h1>
+
+      {reaction.map((r) => (
+        <FlyingReaction
+          key={r.timestamp.toString()}
+          x={r.point.x}
+          y={r.point.y}
+          timestamp={r.timestamp}
+          value={r.value}
+        />
+      ))}
+
       {cursor && (
         <CursorChat
           cursor={cursor}
@@ -121,9 +133,7 @@ const Live = () => {
       )}
 
       {cursorState.mode === CursorMode.ReactionSelector && (
-        <ReactionSelector
-          setReaction={setReactions}
-        />
+        <ReactionSelector setReaction={setReactions} />
       )}
 
       <LiveCursors others={others} />
