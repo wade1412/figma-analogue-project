@@ -69,4 +69,4 @@ const CursorChat = ({ cursor, cursorState, setCursorState, updateMyPresence }: C
   );
 };
 
-export default CursorChat;
+export default CursorChat; 
