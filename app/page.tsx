@@ -10,6 +10,7 @@ import {
   handleCanvasMouseDown,
   handleCanvasMouseUp,
   handleCanvasObjectModified,
+  handleCanvasSelectionCreated,
   handleCanvaseMouseMove,
   handleResize,
   initializeFabric,
@@ -32,8 +33,19 @@ export default function Page() {
   const selectedShapeRef = useRef<string | null>(null);
   const activeObjectRef = useRef<fabric.Object | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const isEditingRef = useRef(false);
 
   const canvasObjects = useStorage((root) => root.canvasObjects);
+
+  const [elementAttributes, setElementAttributes] = useState({
+    width: "",
+    height: "",
+    fontSize: "",
+    fontFamily: "",
+    fontWeight: "",
+    fill: "#aabbcc",
+    stroke: "#aabbcc",
+  });
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
     if (!object) return;
@@ -81,7 +93,7 @@ export default function Page() {
       case "delete":
         handleDelete(fabricRef.current as any, deleteShapeFromStorage);
         setActiveElement(defaultNavElement);
-        break
+        break;
       case "image":
         imageInputRef.current?.click();
         isDrawing.current = false;
@@ -140,6 +152,14 @@ export default function Page() {
       });
     });
 
+    canvas.on("selection:created", (options: any) => {
+      handleCanvasSelectionCreated({
+        options,
+        isEditingRef,
+        setElementAttributes,
+      });
+    });
+
     window.addEventListener("resize", () => {
       handleResize({ fabricRef });
     });
@@ -174,14 +194,14 @@ export default function Page() {
         activeElement={activeElement}
         handleActiveElement={handleActiveElement}
         imageInputRef={imageInputRef}
-        handleImageUpload={(e:any)=> {
-           e.stopPropagation();
-           handleImageUpload({
+        handleImageUpload={(e: any) => {
+          e.stopPropagation();
+          handleImageUpload({
             file: e.target.files[0],
             canvas: fabricRef as any,
             shapeRef,
-            syncShapeInStorage
-           })
+            syncShapeInStorage,
+          });
         }}
       />
 
@@ -190,7 +210,14 @@ export default function Page() {
 
         <Live canvasRef={canvasRef} />
 
-        <RightSidebar />
+        <RightSidebar
+          elementAttributes={elementAttributes}
+          setElementAttributes={setElementAttributes}
+          fabricRef={fabricRef}
+          isEditingRef={isEditingRef}
+          activeObjectRef = {activeObjectRef}
+          syncShapeInStorage={syncShapeInStorage}
+        />
       </section>
     </main>
   );
