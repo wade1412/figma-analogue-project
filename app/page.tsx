@@ -10,6 +10,7 @@ import {
   handleCanvasMouseDown,
   handleCanvasMouseUp,
   handleCanvasObjectModified,
+  handleCanvasObjectScaling,
   handleCanvasSelectionCreated,
   handleCanvaseMouseMove,
   handleResize,
@@ -159,6 +160,12 @@ export default function Page() {
         setElementAttributes,
       });
     });
+
+    canvas.on("object:scaling", (options: any) => {
+      handleCanvasObjectScaling({
+        options, setElementAttributes
+      })
+    })
 
     window.addEventListener("resize", () => {
       handleResize({ fabricRef });
