@@ -1,10 +1,18 @@
-import { LiveMap, createClient } from "@liveblocks/client";
-import { createRoomContext, createLiveblocksContext } from "@liveblocks/react";
-  
+
+
+import { LiveMap, createClient } from "./node_modules/@liveblocks/client/dist/index.mjs";
+import { createRoomContext } from "@liveblocks/react";
+
 const client = createClient({
-    publicApiKey: "pk_dev_kf3XRbpCEb2KecSmipkuc-uYmR_vIsl_y5YFK4v7H4WXt29IoQUEg7rdCbLMXh5X",
-  })
-  
+  publicApiKey: "pk_dev_kf3XRbpCEb2KecSmipkuc-uYmR_vIsl_y5YFK4v7H4WXt29IoQUEg7rdCbLMXh5X",
+  throttle: 16,
+  async resolveUsers({ userIds }) {
+    // ["marc@example.com", ...]
+
+
+    return [userIds]
+  },
+}); 
 
 // Presence represents the properties that exist on every user in the Room
 // and that will automatically be kept in sync. Accessible through the
@@ -21,16 +29,22 @@ type Presence = {
 type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
-
-  canvasObjects: LiveMap<string,any>
+  canvasObjects: LiveMap<string, any>;
 };
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as
 // provided by your own custom auth back end (if used). Useful for data that
 // will not change during a session, like a user's name or avatar.
 type UserMeta = {
-  // id?: string,  // Accessible through `user.id`
-  // info?: Json,  // Accessible through `user.info`
+  id: string;
+
+  info: {
+    name: string;
+    avatar: string;
+
+    // Your custom metadata
+    // ...
+  };
 };
 
 // Optionally, the type of custom events broadcast and listened to in this
@@ -43,12 +57,13 @@ type RoomEvent = {
 // Optionally, when using Comments, ThreadMetadata represents metadata on
 // each thread. Can only contain booleans, strings, and numbers.
 export type ThreadMetadata = {
-  // resolved: boolean;
-  // quote: string;
-  // time: number;
+  resolved: boolean;
+  zIndex: number;
+  time?: number;
+  x: number;
+  y: number;
 };
 
-// Room-level hooks, use inside `RoomProvider`
 export const {
   suspense: {
     RoomProvider,
@@ -58,7 +73,6 @@ export const {
     useSelf,
     useOthers,
     useOthersMapped,
-    useOthersListener,
     useOthersConnectionIds,
     useOther,
     useBroadcastEvent,
@@ -78,6 +92,7 @@ export const {
     useStatus,
     useLostConnectionListener,
     useThreads,
+    useUser,
     useCreateThread,
     useEditThreadMetadata,
     useCreateComment,
@@ -85,28 +100,5 @@ export const {
     useDeleteComment,
     useAddReaction,
     useRemoveReaction,
-    useThreadSubscription,
-    useMarkThreadAsRead,
-    useRoomNotificationSettings,
-    useUpdateRoomNotificationSettings,
-  
-    // These hooks can be exported from either context
-    // useUser,
-    // useRoomInfo
-  }
+  },
 } = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(client);
-
-// Project-level hooks, use inside `LiveblocksProvider`
-export const {
-  suspense: {
-    LiveblocksProvider,
-    useMarkInboxNotificationAsRead,
-    useMarkAllInboxNotificationsAsRead,
-    useInboxNotifications,
-    useUnreadInboxNotificationsCount,
-  
-    // These hooks can be exported from either context
-    useUser,
-    useRoomInfo,
-  }
-} = createLiveblocksContext<UserMeta, ThreadMetadata>(client);
